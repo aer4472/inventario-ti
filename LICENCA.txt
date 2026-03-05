@@ -1,0 +1,16 @@
+INVENTARIO TI — LICENCA DE USO
+================================
+
+Copyright (c) 2024 Eduardo Solucoes Tecnologicas
+Todos os direitos reservados.
+
+Este software e propriedade exclusiva de Eduardo Solucoes Tecnologicas.
+
+E concedida permissao para uso interno da organizacao, sendo proibido:
+- Redistribuir, copiar ou vender este software a terceiros
+- Modificar ou criar obras derivadas sem autorizacao expressa
+- Remover avisos de copyright ou atribuicao
+
+ESTE SOFTWARE E FORNECIDO "COMO ESTA", SEM GARANTIAS DE QUALQUER TIPO.
+
+Contato: Eduardo Solucoes Tecnologicas

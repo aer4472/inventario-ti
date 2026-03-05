@@ -1,0 +1,19 @@
+{
+  "name": "inventario-ti",
+  "version": "1.0.0",
+  "description": "Inventario TI - Eduardo Solucoes Tecnologicas",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "npx esbuild src/index.jsx --bundle --outfile=public/bundle.js --jsx=automatic --platform=browser",
+    "dev": "npm run build && node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.263.1",
+    "recharts": "^2.12.2",
+    "esbuild": "^0.20.2"
+  }
+}

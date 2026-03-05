@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventario TI</title>
+  <style>
+    *{box-sizing:border-box;margin:0}body{background:#070b14}
+    #root{min-height:100vh}
+    #splash{position:fixed;inset:0;background:#070b14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:9999;transition:opacity .4s}
+    .spin{width:36px;height:36px;border:3px solid #172033;border-top-color:#2563eb;border-radius:50%;animation:sp .8s linear infinite}
+    p.msg{color:#4d6080;font-size:13px;font-family:system-ui,sans-serif}
+    @keyframes sp{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div id="splash">
+    <div class="spin"></div>
+    <p class="msg">Carregando Inventario TI...</p>
+  </div>
+  <div id="root"></div>
+
+  <script>
+    window.storage = {
+      get: async function(k) {
+        var r = await fetch('/api/store/' + encodeURIComponent(k));
+        if (r.status === 404) throw new Error('not_found');
+        return r.json();
+      },
+      set: async function(k, v) {
+        var r = await fetch('/api/store/' + encodeURIComponent(k), {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ value: v })
+        });
+        return r.json();
+      },
+      delete: async function(k) {
+        var r = await fetch('/api/store/' + encodeURIComponent(k), { method: 'DELETE' });
+        return r.json();
+      },
+      list: async function(p) {
+        var r = await fetch('/api/store' + (p ? '?prefix=' + encodeURIComponent(p) : ''));
+        return r.json();
+      }
+    };
+
+    function hideSplash() {
+      var s = document.getElementById('splash');
+      if (s) {
+        s.style.opacity = '0';
+        setTimeout(function(){ if (s.parentNode) s.remove(); }, 400);
+      }
+    }
+
+    // Remove o splash assim que o React colocar qualquer filho no #root
+    var root = document.getElementById('root');
+    var obs = new MutationObserver(function(mutations, observer) {
+      if (root.childNodes.length > 0) {
+        observer.disconnect();
+        hideSplash();
+      }
+    });
+    obs.observe(root, { childList: true, subtree: true });
+
+    // Fallback: remove o splash em 3 segundos de qualquer forma
+    setTimeout(hideSplash, 3000);
+  </script>
+
+  <script src="/bundle.js"></script>
+</body>
+</html>
