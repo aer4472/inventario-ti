@@ -6,7 +6,8 @@ import {
   AlertTriangle, BookOpen, Server, ArrowLeftRight, Clock,
   CheckCircle2, RotateCcw, Tag, Download, Upload, HardDrive,
   TrendingUp, Activity, Zap, PieChart as PieIcon,
-  UserCog, LogOut, UserCheck, Eye as EyeIcon, EyeOff as EyeOffIcon
+  UserCog, LogOut, UserCheck, Eye as EyeIcon, EyeOff as EyeOffIcon,
+  TrendingDown, TrendingUp as TrendUp, Calendar, RefreshCw, Hash
 } from "lucide-react";
 import {
   BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,
@@ -19,9 +20,9 @@ const C={bg:"#070b14",card:"#0d1424",card2:"#111c2e",border:"#172033",borderHove
 const CATEGORIAS=["Computadores","Tablets","Access Points","Itens Avulsos"];
 const CAT_COLOR={"Computadores":C.accent,"Tablets":C.purple,"Access Points":C.success,"Itens Avulsos":C.warning};
 
-const KEYS={auth:"inv_auth",computers:"inv_computers",tablets:"inv_tablets",aps:"inv_aps",misc:"inv_misc",vlans:"inv_vlans",setores:"inv_setores",blocos:"inv_blocos",locais:"inv_locais",tiposMaq:"inv_tiposmaq",colaboradores:"inv_colaboradores",senhas:"inv_senhas",emprestimos:"inv_emprestimos"};
+const KEYS={auth:"inv_auth",impressoras:"inv_impressoras",computers:"inv_computers",tablets:"inv_tablets",aps:"inv_aps",misc:"inv_misc",vlans:"inv_vlans",setores:"inv_setores",blocos:"inv_blocos",locais:"inv_locais",tiposMaq:"inv_tiposmaq",colaboradores:"inv_colaboradores",senhas:"inv_senhas",emprestimos:"inv_emprestimos"};
 const load=async(k,fb)=>{try{const r=await window.storage.get(k);return r?JSON.parse(r.value):fb;}catch{return fb;}};
-const save=async(k,d)=>{try{await window.storage.set(k,JSON.stringify(d));}catch{}};
+const save=async(k,d)=>{try{await window.storage.set(k,JSON.stringify(d));}catch(e){console.error("Erro ao salvar",k,e);}};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
 const fmt=v=>(v===null||v===undefined||v==="")?"\u2014":String(v);
 const boolFmt=v=>(v===true||v==="true"||v==="Sim")?"Sim":"Não";
@@ -862,6 +863,403 @@ function DashboardTab({computers,tablets,aps,misc,emprestimos,setores,locais,tip
   );
 }
 
+
+// ── IMPRESSORAS ───────────────────────────────────────────────────────────────
+function mesLabel(ano, mes) {
+  const nomes = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  return nomes[mes] + "/" + String(ano).slice(2);
+}
+
+function mesAtual() {
+  const d = new Date();
+  return { ano: d.getFullYear(), mes: d.getMonth() };
+}
+
+function mesAnterior() {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 1);
+  return { ano: d.getFullYear(), mes: d.getMonth() };
+}
+
+function ImpressoraForm({item, onSave, onClose}) {
+  const[nome,   setNome]   = useState(item?.nome   || "");
+  const[modelo, setModelo] = useState(item?.modelo || "");
+  const[setor,  setSetor]  = useState(item?.setor  || "");
+  const[ip,     setIp]     = useState(item?.ip     || "");
+  const[serial, setSerial] = useState(item?.serial || "");
+  const[obs,    setObs]    = useState(item?.obs    || "");
+
+  const is = {background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,padding:"9px 14px",color:C.text,fontFamily:C.sans,fontSize:13,outline:"none",width:"100%",boxSizing:"border-box"};
+  const ls = {fontSize:11,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",display:"block",marginBottom:5};
+  const fo = e=>e.target.style.borderColor="#f97316";
+  const bl = e=>e.target.style.borderColor=C.border;
+
+  const salvar = () => {
+    if (!nome.trim()) { alert("Informe o nome da impressora."); return; }
+    onSave({ nome, modelo, setor, ip, serial, obs });
+  };
+
+  return (
+    <Modal title={item ? "Editar Impressora" : "Nova Impressora"} onClose={onClose}>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div>
+            <label style={ls}>Nome / Identificação</label>
+            <input value={nome} onChange={e=>setNome(e.target.value)} placeholder="Ex: Impressora Recepção" style={is} onFocus={fo} onBlur={bl}/>
+          </div>
+          <div>
+            <label style={ls}>Modelo</label>
+            <input value={modelo} onChange={e=>setModelo(e.target.value)} placeholder="Ex: HP LaserJet M404n" style={is} onFocus={fo} onBlur={bl}/>
+          </div>
+          <div>
+            <label style={ls}>Setor</label>
+            <input value={setor} onChange={e=>setSetor(e.target.value)} placeholder="Ex: Administrativo" style={is} onFocus={fo} onBlur={bl}/>
+          </div>
+          <div>
+            <label style={ls}>IP na Rede</label>
+            <input value={ip} onChange={e=>setIp(e.target.value)} placeholder="Ex: 192.168.1.50" style={is} onFocus={fo} onBlur={bl}/>
+          </div>
+          <div>
+            <label style={ls}>Número de Série</label>
+            <input value={serial} onChange={e=>setSerial(e.target.value)} placeholder="Ex: VNB3M12345" style={is} onFocus={fo} onBlur={bl}/>
+          </div>
+        </div>
+        <div>
+          <label style={ls}>Observações</label>
+          <textarea value={obs} onChange={e=>setObs(e.target.value)} rows={2}
+            style={{...is,resize:"vertical"}} onFocus={fo} onBlur={bl}/>
+        </div>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",paddingTop:8,borderTop:`1px solid ${C.border}`}}>
+          <Btn variant="outline" onClick={onClose}>Cancelar</Btn>
+          <Btn onClick={salvar} icon={<Check size={13}/>}>Salvar</Btn>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function ContadorModal({impressora, onSave, onClose}) {
+  const hoje  = new Date();
+  const nomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+                 "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const nomesC = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  const anos  = [hoje.getFullYear()-2, hoje.getFullYear()-1, hoje.getFullYear()];
+
+  // Mês de referência (anterior)
+  const defAnoAnt = hoje.getMonth()===0 ? hoje.getFullYear()-1 : hoje.getFullYear();
+  const defMesAnt = hoje.getMonth()===0 ? 11 : hoje.getMonth()-1;
+
+  const[anoSel, setAnoSel] = useState(hoje.getFullYear());
+  const[mesSel, setMesSel] = useState(hoje.getMonth());
+  const[anoAnt, setAnoAnt] = useState(defAnoAnt);
+  const[mesAnt, setMesAnt] = useState(defMesAnt);
+
+  const leituras = impressora.leituras || {};
+
+  const keySel = `${anoSel}-${String(mesSel+1).padStart(2,'0')}`;
+  const keyAnt = `${anoAnt}-${String(mesAnt+1).padStart(2,'0')}`;
+
+  const[valAtual, setValAtual] = useState(leituras[keySel]?.contador != null ? String(leituras[keySel].contador) : "");
+  const[valAnt,   setValAnt]   = useState(leituras[keyAnt]?.contador  != null ? String(leituras[keyAnt].contador)  : "");
+
+  // Ao trocar mês selecionado: recarrega valor salvo
+  const trocarMesSel = (ano, mes) => {
+    setAnoSel(ano); setMesSel(mes);
+    const k = `${ano}-${String(mes+1).padStart(2,'0')}`;
+    setValAtual(leituras[k]?.contador != null ? String(leituras[k].contador) : "");
+  };
+  const trocarMesAnt = (ano, mes) => {
+    setAnoAnt(ano); setMesAnt(mes);
+    const k = `${ano}-${String(mes+1).padStart(2,'0')}`;
+    setValAnt(leituras[k]?.contador != null ? String(leituras[k].contador) : "");
+  };
+
+  // Cálculo: impressões do mês = leitura atual - leitura anterior
+  const numAtual = valAtual !== "" ? parseInt(valAtual, 10) : null;
+  const numAnt   = valAnt   !== "" ? parseInt(valAnt,   10) : null;
+  const impresso = (numAtual !== null && numAnt !== null) ? Math.max(0, numAtual - numAnt) : null;
+
+  const salvar = () => {
+    const novas = { ...leituras };
+    if (valAtual !== "") novas[keySel] = { contador: parseInt(valAtual,10), registradoEm: new Date().toLocaleDateString("pt-BR") };
+    if (valAnt   !== "") novas[keyAnt] = { contador: parseInt(valAnt,  10), registradoEm: novas[keyAnt]?.registradoEm || new Date().toLocaleDateString("pt-BR") };
+    onSave(novas);
+  };
+
+  const selStyle = {background:C.bg,border:`1px solid ${C.border}`,borderRadius:7,padding:"8px 10px",color:C.text,fontFamily:C.sans,fontSize:13,outline:"none",cursor:"pointer"};
+
+  return (
+    <Modal title="Contador de Impressão" subtitle={impressora.nome} onClose={onClose} maxWidth={560}>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+
+        {/* Explicação */}
+        <div style={{background:C.accentGlow,border:`1px solid ${C.accent}22`,borderRadius:8,padding:"9px 13px",fontSize:11,color:C.muted,lineHeight:1.6}}>
+          Informe a <strong style={{color:C.text}}>leitura do contador</strong> (número total acumulado na impressora) dos dois meses.
+          O sistema calcula automaticamente a quantidade impressa no período.
+        </div>
+
+        {/* Bloco mês de referência */}
+        <div style={{background:C.card2,border:`1px solid ${C.border}`,borderRadius:10,padding:16}}>
+          <div style={{fontSize:12,fontWeight:700,color:C.muted,marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
+            <div style={{width:8,height:8,borderRadius:2,background:C.muted}}/> Mês de Referência (leitura anterior)
+          </div>
+          <div style={{display:"flex",gap:8,marginBottom:10}}>
+            <select value={mesAnt} onChange={e=>trocarMesAnt(anoAnt, parseInt(e.target.value))} style={{...selStyle,flex:1}}>
+              {nomes.map((n,i)=><option key={i} value={i}>{n}</option>)}
+            </select>
+            <select value={anoAnt} onChange={e=>trocarMesAnt(parseInt(e.target.value), mesAnt)} style={selStyle}>
+              {anos.map(a=><option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+          <input
+            type="number" min="0" value={valAnt}
+            onChange={e=>setValAnt(e.target.value)}
+            placeholder="Leitura do contador (ex: 12345)"
+            style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,padding:"12px 14px",color:C.text,fontFamily:C.sans,fontSize:24,fontWeight:800,outline:"none",width:"100%",boxSizing:"border-box",textAlign:"center"}}
+            onFocus={e=>e.target.style.borderColor=C.muted}
+            onBlur={e=>e.target.style.borderColor=C.border}
+          />
+        </div>
+
+        {/* Bloco mês atual */}
+        <div style={{background:"#f9731610",border:`1px solid #f9731633`,borderRadius:10,padding:16}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#f97316",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
+            <div style={{width:8,height:8,borderRadius:2,background:"#f97316"}}/> Mês de Contagem (leitura atual)
+          </div>
+          <div style={{display:"flex",gap:8,marginBottom:10}}>
+            <select value={mesSel} onChange={e=>trocarMesSel(anoSel, parseInt(e.target.value))} style={{...selStyle,flex:1,borderColor:"#f9731644"}}>
+              {nomes.map((n,i)=><option key={i} value={i}>{n}</option>)}
+            </select>
+            <select value={anoSel} onChange={e=>trocarMesSel(parseInt(e.target.value), mesSel)} style={{...selStyle,borderColor:"#f9731644"}}>
+              {anos.map(a=><option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+          <input
+            type="number" min="0" value={valAtual}
+            onChange={e=>setValAtual(e.target.value)}
+            placeholder="Leitura do contador (ex: 14870)"
+            style={{background:C.bg,border:`1px solid #f9731644`,borderRadius:8,padding:"12px 14px",color:"#f97316",fontFamily:C.sans,fontSize:24,fontWeight:800,outline:"none",width:"100%",boxSizing:"border-box",textAlign:"center"}}
+            onFocus={e=>e.target.style.borderColor="#f97316"}
+            onBlur={e=>e.target.style.borderColor="#f9731644"}
+          />
+        </div>
+
+        {/* Resultado */}
+        <div style={{borderRadius:12,padding:20,textAlign:"center",
+          background: impresso!==null ? "#f9731622" : C.card2,
+          border: `2px solid ${impresso!==null ? "#f97316" : C.border}`,
+          transition:"all 0.3s"}}>
+          <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>
+            Impressões em {nomesC[mesSel]}/{anoSel}
+          </div>
+          <div style={{fontSize:56,fontWeight:900,lineHeight:1,fontVariantNumeric:"tabular-nums",
+            color: impresso!==null ? "#f97316" : C.muted}}>
+            {impresso!==null ? impresso.toLocaleString("pt-BR") : "—"}
+          </div>
+          {impresso!==null && (
+            <div style={{fontSize:12,color:C.muted,marginTop:8}}>
+              {numAnt.toLocaleString("pt-BR")} <span style={{color:C.muted}}>({nomesC[mesAnt]}/{anoAnt})</span>
+              {" → "}
+              {numAtual.toLocaleString("pt-BR")} <span style={{color:"#f97316"}}>({nomesC[mesSel]}/{anoSel})</span>
+            </div>
+          )}
+          {impresso===null && <div style={{fontSize:12,color:C.muted,marginTop:6}}>Preencha os dois campos acima para calcular</div>}
+        </div>
+
+        {/* Histórico */}
+        {Object.keys(leituras).length > 0 && (
+          <div style={{background:C.card2,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+            <div style={{padding:"10px 16px",borderBottom:`1px solid ${C.border}`,fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em"}}>
+              Histórico de Leituras
+            </div>
+            <div style={{maxHeight:140,overflowY:"auto"}}>
+              {Object.entries(leituras)
+                .sort((a,b)=>b[0].localeCompare(a[0]))
+                .map(([key,val])=>{
+                  const [ano,mes] = key.split("-").map(Number);
+                  return(
+                    <div key={key} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 16px",borderBottom:`1px solid ${C.border}18`}}>
+                      <span style={{fontSize:12,color:C.muted,width:80}}>{nomesC[mes-1]}/{ano}</span>
+                      <span style={{fontSize:14,fontWeight:800,color:C.text}}>{(val.contador||0).toLocaleString("pt-BR")}</span>
+                      <span style={{fontSize:10,color:C.muted}}>{val.registradoEm||""}</span>
+                    </div>
+                  );
+                })
+              }
+            </div>
+          </div>
+        )}
+
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",paddingTop:4,borderTop:`1px solid ${C.border}`}}>
+          <Btn variant="outline" onClick={onClose}>Cancelar</Btn>
+          <Btn onClick={salvar} icon={<Check size={13}/>}>Salvar Leituras</Btn>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function ImpressorasTab({impressoras, setImpressoras}) {
+  const[search,setSearch]   = useState("");
+  const[form,setForm]       = useState(null);   // null | "new" | impressora
+  const[contador,setContador] = useState(null); // impressora selecionada para contador
+
+  const save = async (lista) => {
+    setImpressoras(lista);
+    await window.storage.set(KEYS.impressoras, JSON.stringify(lista));
+  };
+
+  const addOrEdit = async (data) => {
+    let lista;
+    if (form === "new") {
+      lista = [...impressoras, { ...data, id: Date.now(), leituras: {}, criadoEm: new Date().toLocaleDateString("pt-BR") }];
+    } else {
+      lista = impressoras.map(i => i.id === form.id ? { ...form, ...data } : i);
+    }
+    await save(lista);
+    setForm(null);
+  };
+
+  const del = async (id) => {
+    if (!confirm("Excluir esta impressora?")) return;
+    await save(impressoras.filter(i => i.id !== id));
+  };
+
+  const salvarContador = async (leituras) => {
+    const lista = impressoras.map(i => i.id === contador.id ? { ...i, leituras } : i);
+    await save(lista);
+    setContador(null);
+  };
+
+  const ma   = mesAtual();
+  const mant = mesAnterior();
+  const keyAtual = `${ma.ano}-${String(ma.mes+1).padStart(2,'0')}`;
+  const keyAnt   = `${mant.ano}-${String(mant.mes+1).padStart(2,'0')}`;
+
+  const getImpresso = (imp) => {
+    const leit = imp.leituras || {};
+    const a = leit[keyAtual]?.contador;
+    const ant = leit[keyAnt]?.contador;
+    if (a != null && ant != null) return Math.max(0, a - ant);
+    return null;
+  };
+
+  const filtered = impressoras.filter(i =>
+    i.nome?.toLowerCase().includes(search.toLowerCase()) ||
+    i.modelo?.toLowerCase().includes(search.toLowerCase()) ||
+    i.setor?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalMes = impressoras.reduce((s,i) => { const v=getImpresso(i); return v!=null?s+v:s; }, 0);
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:0,height:"100%"}}>
+      {/* Header */}
+      <div style={{padding:"16px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:36,height:36,background:"#f9731622",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center"}}><Printer size={16} color="#f97316"/></div>
+          <div>
+            <div style={{fontSize:14,fontWeight:700,color:C.text}}>Gestão de Impressoras</div>
+            <div style={{fontSize:11,color:C.muted}}>{impressoras.length} impressora{impressoras.length!==1?"s":""} cadastrada{impressoras.length!==1?"s":""}</div>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          {/* Total do mês */}
+          <div style={{background:"#f9731615",border:"1px solid #f9731633",borderRadius:9,padding:"6px 14px",display:"flex",alignItems:"center",gap:8}}>
+            <TrendUp size={13} color="#f97316"/>
+            <span style={{fontSize:12,fontWeight:700,color:"#f97316"}}>{totalMes.toLocaleString("pt-BR")} impressões em {mesLabel(ma.ano,ma.mes)}</span>
+          </div>
+          <div style={{position:"relative"}}>
+            <Search size={13} style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:C.muted}}/>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar..."
+              style={{background:C.card2,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px 8px 30px",color:C.text,fontFamily:C.sans,fontSize:12,outline:"none",width:180}}/>
+          </div>
+          <Btn onClick={()=>setForm("new")} icon={<Plus size={13}/>}>Nova Impressora</Btn>
+        </div>
+      </div>
+
+      {/* Lista */}
+      <div style={{flex:1,overflowY:"auto",padding:20,display:"flex",flexDirection:"column",gap:12}}>
+        {filtered.length===0 && (
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12,height:200,color:C.muted}}>
+            <Printer size={40} style={{opacity:0.2}}/>
+            <span style={{fontSize:13}}>{search?"Nenhuma impressora encontrada":"Nenhuma impressora cadastrada"}</span>
+            {!search&&<Btn onClick={()=>setForm("new")} icon={<Plus size={13}/>}>Cadastrar primeira impressora</Btn>}
+          </div>
+        )}
+
+        {filtered.map(imp => {
+          const impresso = getImpresso(imp);
+          const leit = imp.leituras || {};
+          const temAtual = leit[keyAtual]?.contador != null;
+          const temAnt   = leit[keyAnt]?.contador != null;
+
+          return (
+            <div key={imp.id} style={{background:C.card2,border:`1px solid ${C.border}`,borderRadius:12,padding:16,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap",transition:"border-color 0.2s"}}
+              onMouseEnter={e=>e.currentTarget.style.borderColor="#f97316"}
+              onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+
+              {/* Ícone */}
+              <div style={{width:44,height:44,background:"#f9731618",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <Printer size={20} color="#f97316"/>
+              </div>
+
+              {/* Info */}
+              <div style={{flex:1,minWidth:200}}>
+                <div style={{fontSize:14,fontWeight:700,color:C.text}}>{imp.nome}</div>
+                <div style={{fontSize:12,color:C.muted,marginTop:2}}>{imp.modelo||"—"} {imp.setor?`· ${imp.setor}`:""} {imp.ip?`· ${imp.ip}`:""}</div>
+                {imp.serial&&<div style={{fontSize:11,color:C.muted,marginTop:1}}>S/N: {imp.serial}</div>}
+              </div>
+
+              {/* Contadores */}
+              <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                {/* Mês anterior */}
+                <div style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 14px",textAlign:"center",minWidth:90}}>
+                  <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",marginBottom:3}}>{mesLabel(mant.ano,mant.mes)}</div>
+                  <div style={{fontSize:16,fontWeight:800,color:temAnt?C.text:C.muted}}>{temAnt?(leit[keyAnt].contador||0).toLocaleString("pt-BR"):"—"}</div>
+                </div>
+
+                {/* Seta */}
+                <div style={{color:C.muted,fontSize:16}}>→</div>
+
+                {/* Mês atual */}
+                <div style={{background:C.bg,border:`1px solid ${temAtual?"#f9731644":C.border}`,borderRadius:8,padding:"8px 14px",textAlign:"center",minWidth:90}}>
+                  <div style={{fontSize:9,fontWeight:700,color:"#f97316",textTransform:"uppercase",marginBottom:3}}>{mesLabel(ma.ano,ma.mes)}</div>
+                  <div style={{fontSize:16,fontWeight:800,color:temAtual?"#f97316":C.muted}}>{temAtual?(leit[keyAtual].contador||0).toLocaleString("pt-BR"):"—"}</div>
+                </div>
+
+                {/* Resultado */}
+                <div style={{background:impresso!=null?"#f9731622":C.bg,border:`2px solid ${impresso!=null?"#f97316":C.border}`,borderRadius:8,padding:"8px 16px",textAlign:"center",minWidth:90}}>
+                  <div style={{fontSize:9,fontWeight:700,color:impresso!=null?"#f97316":C.muted,textTransform:"uppercase",marginBottom:3}}>Impresso</div>
+                  <div style={{fontSize:18,fontWeight:900,color:impresso!=null?"#f97316":C.muted}}>{impresso!=null?impresso.toLocaleString("pt-BR"):"—"}</div>
+                </div>
+              </div>
+
+              {/* Ações */}
+              <div style={{display:"flex",gap:6,flexShrink:0}}>
+                <button onClick={()=>setContador(imp)} style={{display:"flex",alignItems:"center",gap:5,background:"#f9731620",border:"1px solid #f9731644",borderRadius:7,padding:"6px 12px",color:"#f97316",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:C.sans}} title="Registrar contador">
+                  <Hash size={12}/>Contador
+                </button>
+                <button onClick={()=>setForm(imp)} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 8px",color:C.muted,cursor:"pointer",display:"flex"}} title="Editar">
+                  <Edit2 size={13}/>
+                </button>
+                <button onClick={()=>del(imp.id)} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:7,padding:"6px 8px",color:C.muted,cursor:"pointer",display:"flex"}} title="Excluir"
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=C.danger;e.currentTarget.style.color=C.danger;}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}>
+                  <Trash2 size={13}/>
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {form&&<ImpressoraForm item={form==="new"?null:form} onSave={addOrEdit} onClose={()=>setForm(null)}/>}
+      {contador&&<ContadorModal impressora={contador} onSave={salvarContador} onClose={()=>setContador(null)}/>}
+    </div>
+  );
+}
+
 // ── BACKUP / RESTAURAÇÃO ──────────────────────────────────────────────────────
 function BackupModal({onClose}){
   const[restoring,setRestoring]=useState(false);
@@ -938,6 +1336,7 @@ const TABS=[
   {id:"equipamentos", label:"Equipamentos",      icon:Monitor,       color:C.accent},
   {id:"emprestimos",  label:"Empréstimos",       icon:ArrowLeftRight,color:C.orange},
   {id:"cadastros",    label:"Cadastros",          icon:BookOpen,      color:"#fb923c"},
+  {id:"impressoras",  label:"Impressoras",        icon:Printer,       color:"#f97316"},
   {id:"senhas",       label:"Cofre de Senhas",   icon:Shield,        color:"#f472b6"},
 ];
 
@@ -945,10 +1344,15 @@ export default function App(){
   const[active,setActive]=useState("dashboard");
   const[computers,setComputers]=useState([]);const[tablets,setTablets]=useState([]);const[aps,setAps]=useState([]);const[misc,setMisc]=useState([]);
   const[vlans,setVlans]=useState(["Administrativa","Laboratório"]);
-  const[setores,setSetores]=useState([]);const[blocos,setBlocos]=useState([]);const[locais,setLocais]=useState([]);const[tiposMaq,setTiposMaq]=useState([]);const[colaboradores,setColaboradores]=useState([]);const[senhas,setSenhas]=useState([]);const[emprestimos,setEmprestimos]=useState([]);
-  const[loaded,setLoaded]=useState(false);const[showReports,setShowReports]=useState(false);const[showBackup,setShowBackup]=useState(false);const[loggedIn,setLoggedIn]=useState(false);const[currentUser,setCurrentUser]=useState("");const[showConfig,setShowConfig]=useState(false);
+  const[setores,setSetores]=useState([]);const[blocos,setBlocos]=useState([]);const[locais,setLocais]=useState([]);const[tiposMaq,setTiposMaq]=useState([]);const[colaboradores,setColaboradores]=useState([]);const[senhas,setSenhas]=useState([]);const[emprestimos,setEmprestimos]=useState([]);const[impressoras,setImpressoras]=useState([]);
+  const[loaded,setLoaded]=useState(false);const[showReports,setShowReports]=useState(false);const[showBackup,setShowBackup]=useState(false);const[loggedIn,setLoggedIn]=useState(()=>{
+    // Mantém sessão durante a aba — não pede login ao recarregar
+    return sessionStorage.getItem("inv_logged")==="1";
+  });
+  const[currentUser,setCurrentUser]=useState(()=>sessionStorage.getItem("inv_user")||"");
+  const[showConfig,setShowConfig]=useState(false);
 
-  useEffect(()=>{(async()=>{const[c,t,a,m,v,st,bl,lo,tm,co,se,em]=await Promise.all([load(KEYS.computers,SC),load(KEYS.tablets,[]),load(KEYS.aps,[]),load(KEYS.misc,[]),load(KEYS.vlans,["Administrativa","Laboratório"]),load(KEYS.setores,SS),load(KEYS.blocos,SB),load(KEYS.locais,SL),load(KEYS.tiposMaq,STM),load(KEYS.colaboradores,[]),load(KEYS.senhas,[]),load(KEYS.emprestimos,[])]);setComputers(c);setTablets(t);setAps(a);setMisc(m);setVlans(v);setSetores(st);setBlocos(bl);setLocais(lo);setTiposMaq(tm);setColaboradores(co);setSenhas(se);setEmprestimos(em);setLoaded(true);})();},[]);
+  useEffect(()=>{(async()=>{const[c,t,a,m,v,st,bl,lo,tm,co,se,em,imp]=await Promise.all([load(KEYS.computers,SC),load(KEYS.tablets,[]),load(KEYS.aps,[]),load(KEYS.misc,[]),load(KEYS.vlans,["Administrativa","Laboratório"]),load(KEYS.setores,SS),load(KEYS.blocos,SB),load(KEYS.locais,SL),load(KEYS.tiposMaq,STM),load(KEYS.colaboradores,[]),load(KEYS.senhas,[]),load(KEYS.emprestimos,[]),load(KEYS.impressoras,[])]);setComputers(c);setTablets(t);setAps(a);setMisc(m);setVlans(v);setSetores(st);setBlocos(bl);setLocais(lo);setTiposMaq(tm);setColaboradores(co);setSenhas(se);setEmprestimos(em);setImpressoras(imp);setLoaded(true);})();},[]);
 
   const addVlan=useCallback(v=>{const u=[...new Set([...vlans,v])];setVlans(u);save(KEYS.vlans,u);},[vlans]);
   const empAtrasados=emprestimos.filter(e=>!e.devolvido&&e.dataPrevista&&today()>e.dataPrevista).length;
@@ -963,7 +1367,7 @@ export default function App(){
   ];
 
   if(!loaded)return(<div style={{background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:C.sans}}><div style={{color:C.muted,display:"flex",flexDirection:"column",alignItems:"center",gap:14}}><div style={{width:36,height:36,border:`3px solid ${C.border}`,borderTopColor:C.accent,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/><span style={{fontSize:13}}>Carregando inventário...</span></div></div>);
-  if(!loggedIn)return <LoginScreen onLogin={u=>{setLoggedIn(true);setCurrentUser(u);}}/>;
+  if(!loggedIn)return <LoginScreen onLogin={u=>{setLoggedIn(true);setCurrentUser(u);sessionStorage.setItem("inv_logged","1");sessionStorage.setItem("inv_user",u);}}/>;
 
   return(
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:C.sans,color:C.text}}>
@@ -980,7 +1384,7 @@ export default function App(){
             </button>
             <button onClick={()=>setShowBackup(true)} style={{display:"inline-flex",alignItems:"center",gap:8,background:C.success+"22",border:`1px solid ${C.success}55`,borderRadius:8,padding:"8px 18px",color:C.text,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:C.sans,transition:"all 0.2s"}} onMouseEnter={e=>{e.currentTarget.style.background=C.success+"44";}} onMouseLeave={e=>{e.currentTarget.style.background=C.success+"22";}}><HardDrive size={15} color={C.success}/>Backup &amp; Restauração</button>
             <button onClick={()=>setShowConfig(true)} style={{display:"inline-flex",alignItems:"center",gap:8,background:C.card2,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 14px",color:C.muted,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:C.sans,transition:"all 0.2s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor=C.accent;e.currentTarget.style.color=C.text;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}><UserCog size={14}/>{currentUser}</button>
-            <button onClick={()=>{setLoggedIn(false);setCurrentUser("");}} style={{display:"inline-flex",alignItems:"center",gap:6,background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",color:C.muted,fontSize:12,cursor:"pointer",fontFamily:C.sans,transition:"all 0.2s"}} title="Sair" onMouseEnter={e=>{e.currentTarget.style.borderColor=C.danger;e.currentTarget.style.color=C.danger;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}><LogOut size={13}/>Sair</button>
+            <button onClick={()=>{setLoggedIn(false);setCurrentUser("");sessionStorage.removeItem("inv_logged");sessionStorage.removeItem("inv_user");}} style={{display:"inline-flex",alignItems:"center",gap:6,background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",color:C.muted,fontSize:12,cursor:"pointer",fontFamily:C.sans,transition:"all 0.2s"}} title="Sair" onMouseEnter={e=>{e.currentTarget.style.borderColor=C.danger;e.currentTarget.style.color=C.danger;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}><LogOut size={13}/>Sair</button>
           </div>
           <div style={{display:"flex",gap:10,paddingBottom:14,flexWrap:"wrap"}}>
             {stats.map(({label,count,icon:Icon,color,sub,subColor})=>(
@@ -1010,7 +1414,8 @@ export default function App(){
           {active==="equipamentos"&&<EquipamentosTab computers={computers} setComputers={setComputers} tablets={tablets} setTablets={setTablets} aps={aps} setAps={setAps} misc={misc} setMisc={setMisc} vlans={vlans} addVlan={addVlan} blocos={blocos} setores={setores} locais={locais} tiposMaq={tiposMaq}/>}
           {active==="emprestimos"&&<EmprestimosTab emprestimos={emprestimos} setEmprestimos={v=>{setEmprestimos(v);save(KEYS.emprestimos,v);}} colaboradores={colaboradores} tiposMaq={tiposMaq}/>}
           {active==="cadastros"&&<CadastrosTab setores={setores} setSetores={setSetores} blocos={blocos} setBlocos={setBlocos} locais={locais} setLocais={setLocais} tiposMaq={tiposMaq} setTiposMaq={setTiposMaq} colaboradores={colaboradores} setColaboradores={setColaboradores}/>}
-          {active==="senhas"&&<SenhasTab senhas={senhas} setSenhas={setSenhas}/>}
+          {active==="impressoras"&&<ImpressorasTab impressoras={impressoras} setImpressoras={setImpressoras}/>}
+        {active==="senhas"&&<SenhasTab senhas={senhas} setSenhas={setSenhas}/>}
         </div>
       </div>
       {showBackup&&<BackupModal onClose={()=>setShowBackup(false)}/>}

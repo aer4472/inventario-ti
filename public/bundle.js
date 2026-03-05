@@ -23911,7 +23911,7 @@
       var hashGet = require_hashGet();
       var hashHas = require_hashHas();
       var hashSet = require_hashSet();
-      function Hash(entries) {
+      function Hash2(entries) {
         var index = -1, length = entries == null ? 0 : entries.length;
         this.clear();
         while (++index < length) {
@@ -23919,12 +23919,12 @@
           this.set(entry[0], entry[1]);
         }
       }
-      Hash.prototype.clear = hashClear;
-      Hash.prototype["delete"] = hashDelete;
-      Hash.prototype.get = hashGet;
-      Hash.prototype.has = hashHas;
-      Hash.prototype.set = hashSet;
-      module.exports = Hash;
+      Hash2.prototype.clear = hashClear;
+      Hash2.prototype["delete"] = hashDelete;
+      Hash2.prototype.get = hashGet;
+      Hash2.prototype.has = hashHas;
+      Hash2.prototype.set = hashSet;
+      module.exports = Hash2;
     }
   });
 
@@ -24069,15 +24069,15 @@
   // node_modules/lodash/_mapCacheClear.js
   var require_mapCacheClear = __commonJS({
     "node_modules/lodash/_mapCacheClear.js"(exports, module) {
-      var Hash = require_Hash();
+      var Hash2 = require_Hash();
       var ListCache = require_ListCache();
       var Map2 = require_Map();
       function mapCacheClear() {
         this.size = 0;
         this.__data__ = {
-          "hash": new Hash(),
+          "hash": new Hash2(),
           "map": new (Map2 || ListCache)(),
-          "string": new Hash()
+          "string": new Hash2()
         };
       }
       module.exports = mapCacheClear;
@@ -30288,6 +30288,14 @@
     ],
     ["line", { x1: "6", x2: "6.01", y1: "16", y2: "16", key: "sgf278" }],
     ["line", { x1: "10", x2: "10.01", y1: "16", y2: "16", key: "1l4acy" }]
+  ]);
+
+  // node_modules/lucide-react/dist/esm/icons/hash.mjs
+  var Hash = createLucideIcon$1("Hash", [
+    ["line", { x1: "4", x2: "20", y1: "9", y2: "9", key: "4lhtct" }],
+    ["line", { x1: "4", x2: "20", y1: "15", y2: "15", key: "vyu0kd" }],
+    ["line", { x1: "10", x2: "8", y1: "3", y2: "21", key: "1ggp8o" }],
+    ["line", { x1: "16", x2: "14", y1: "3", y2: "21", key: "weycgp" }]
   ]);
 
   // node_modules/lucide-react/dist/esm/icons/key-round.mjs
@@ -52589,7 +52597,7 @@
   var C = { bg: "#070b14", card: "#0d1424", card2: "#111c2e", border: "#172033", borderHover: "#1e2d45", accent: "#2563eb", accentGlow: "rgba(37,99,235,0.12)", text: "#dde6f5", muted: "#4d6080", dim: "#1e2d45", success: "#10b981", danger: "#ef4444", warning: "#f59e0b", purple: "#8b5cf6", teal: "#14b8a6", orange: "#f97316", mono: "'IBM Plex Mono','Cascadia Code',monospace", sans: "'Inter','Segoe UI',system-ui,sans-serif" };
   var CATEGORIAS = ["Computadores", "Tablets", "Access Points", "Itens Avulsos"];
   var CAT_COLOR = { "Computadores": C.accent, "Tablets": C.purple, "Access Points": C.success, "Itens Avulsos": C.warning };
-  var KEYS = { auth: "inv_auth", computers: "inv_computers", tablets: "inv_tablets", aps: "inv_aps", misc: "inv_misc", vlans: "inv_vlans", setores: "inv_setores", blocos: "inv_blocos", locais: "inv_locais", tiposMaq: "inv_tiposmaq", colaboradores: "inv_colaboradores", senhas: "inv_senhas", emprestimos: "inv_emprestimos" };
+  var KEYS = { auth: "inv_auth", impressoras: "inv_impressoras", computers: "inv_computers", tablets: "inv_tablets", aps: "inv_aps", misc: "inv_misc", vlans: "inv_vlans", setores: "inv_setores", blocos: "inv_blocos", locais: "inv_locais", tiposMaq: "inv_tiposmaq", colaboradores: "inv_colaboradores", senhas: "inv_senhas", emprestimos: "inv_emprestimos" };
   var load = async (k2, fb) => {
     try {
       const r2 = await window.storage.get(k2);
@@ -52601,7 +52609,8 @@
   var save = async (k2, d) => {
     try {
       await window.storage.set(k2, JSON.stringify(d));
-    } catch {
+    } catch (e) {
+      console.error("Erro ao salvar", k2, e);
     }
   };
   var uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
@@ -54222,6 +54231,418 @@
       })()
     ] });
   }
+  function mesLabel(ano, mes) {
+    const nomes = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    return nomes[mes] + "/" + String(ano).slice(2);
+  }
+  function mesAtual() {
+    const d = /* @__PURE__ */ new Date();
+    return { ano: d.getFullYear(), mes: d.getMonth() };
+  }
+  function mesAnterior() {
+    const d = /* @__PURE__ */ new Date();
+    d.setMonth(d.getMonth() - 1);
+    return { ano: d.getFullYear(), mes: d.getMonth() };
+  }
+  function ImpressoraForm({ item, onSave, onClose }) {
+    const [nome, setNome] = (0, import_react42.useState)(item?.nome || "");
+    const [modelo, setModelo] = (0, import_react42.useState)(item?.modelo || "");
+    const [setor, setSetor] = (0, import_react42.useState)(item?.setor || "");
+    const [ip, setIp] = (0, import_react42.useState)(item?.ip || "");
+    const [serial, setSerial] = (0, import_react42.useState)(item?.serial || "");
+    const [obs, setObs] = (0, import_react42.useState)(item?.obs || "");
+    const is = { background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "9px 14px", color: C.text, fontFamily: C.sans, fontSize: 13, outline: "none", width: "100%", boxSizing: "border-box" };
+    const ls = { fontSize: 11, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 5 };
+    const fo = (e) => e.target.style.borderColor = "#f97316";
+    const bl = (e) => e.target.style.borderColor = C.border;
+    const salvar = () => {
+      if (!nome.trim()) {
+        alert("Informe o nome da impressora.");
+        return;
+      }
+      onSave({ nome, modelo, setor, ip, serial, obs });
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Modal, { title: item ? "Editar Impressora" : "Nova Impressora", onClose, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 14 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { style: ls, children: "Nome / Identifica\xE7\xE3o" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { value: nome, onChange: (e) => setNome(e.target.value), placeholder: "Ex: Impressora Recep\xE7\xE3o", style: is, onFocus: fo, onBlur: bl })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { style: ls, children: "Modelo" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { value: modelo, onChange: (e) => setModelo(e.target.value), placeholder: "Ex: HP LaserJet M404n", style: is, onFocus: fo, onBlur: bl })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { style: ls, children: "Setor" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { value: setor, onChange: (e) => setSetor(e.target.value), placeholder: "Ex: Administrativo", style: is, onFocus: fo, onBlur: bl })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { style: ls, children: "IP na Rede" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { value: ip, onChange: (e) => setIp(e.target.value), placeholder: "Ex: 192.168.1.50", style: is, onFocus: fo, onBlur: bl })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { style: ls, children: "N\xFAmero de S\xE9rie" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { value: serial, onChange: (e) => setSerial(e.target.value), placeholder: "Ex: VNB3M12345", style: is, onFocus: fo, onBlur: bl })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { style: ls, children: "Observa\xE7\xF5es" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "textarea",
+          {
+            value: obs,
+            onChange: (e) => setObs(e.target.value),
+            rows: 2,
+            style: { ...is, resize: "vertical" },
+            onFocus: fo,
+            onBlur: bl
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 8, borderTop: `1px solid ${C.border}` }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Btn, { variant: "outline", onClick: onClose, children: "Cancelar" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Btn, { onClick: salvar, icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, { size: 13 }), children: "Salvar" })
+      ] })
+    ] }) });
+  }
+  function ContadorModal({ impressora, onSave, onClose }) {
+    const hoje = /* @__PURE__ */ new Date();
+    const nomes = [
+      "Janeiro",
+      "Fevereiro",
+      "Mar\xE7o",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro"
+    ];
+    const nomesC = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    const anos = [hoje.getFullYear() - 2, hoje.getFullYear() - 1, hoje.getFullYear()];
+    const defAnoAnt = hoje.getMonth() === 0 ? hoje.getFullYear() - 1 : hoje.getFullYear();
+    const defMesAnt = hoje.getMonth() === 0 ? 11 : hoje.getMonth() - 1;
+    const [anoSel, setAnoSel] = (0, import_react42.useState)(hoje.getFullYear());
+    const [mesSel, setMesSel] = (0, import_react42.useState)(hoje.getMonth());
+    const [anoAnt, setAnoAnt] = (0, import_react42.useState)(defAnoAnt);
+    const [mesAnt, setMesAnt] = (0, import_react42.useState)(defMesAnt);
+    const leituras = impressora.leituras || {};
+    const keySel = `${anoSel}-${String(mesSel + 1).padStart(2, "0")}`;
+    const keyAnt = `${anoAnt}-${String(mesAnt + 1).padStart(2, "0")}`;
+    const [valAtual, setValAtual] = (0, import_react42.useState)(leituras[keySel]?.contador != null ? String(leituras[keySel].contador) : "");
+    const [valAnt, setValAnt] = (0, import_react42.useState)(leituras[keyAnt]?.contador != null ? String(leituras[keyAnt].contador) : "");
+    const trocarMesSel = (ano, mes) => {
+      setAnoSel(ano);
+      setMesSel(mes);
+      const k2 = `${ano}-${String(mes + 1).padStart(2, "0")}`;
+      setValAtual(leituras[k2]?.contador != null ? String(leituras[k2].contador) : "");
+    };
+    const trocarMesAnt = (ano, mes) => {
+      setAnoAnt(ano);
+      setMesAnt(mes);
+      const k2 = `${ano}-${String(mes + 1).padStart(2, "0")}`;
+      setValAnt(leituras[k2]?.contador != null ? String(leituras[k2].contador) : "");
+    };
+    const numAtual = valAtual !== "" ? parseInt(valAtual, 10) : null;
+    const numAnt = valAnt !== "" ? parseInt(valAnt, 10) : null;
+    const impresso = numAtual !== null && numAnt !== null ? Math.max(0, numAtual - numAnt) : null;
+    const salvar = () => {
+      const novas = { ...leituras };
+      if (valAtual !== "")
+        novas[keySel] = { contador: parseInt(valAtual, 10), registradoEm: (/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR") };
+      if (valAnt !== "")
+        novas[keyAnt] = { contador: parseInt(valAnt, 10), registradoEm: novas[keyAnt]?.registradoEm || (/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR") };
+      onSave(novas);
+    };
+    const selStyle = { background: C.bg, border: `1px solid ${C.border}`, borderRadius: 7, padding: "8px 10px", color: C.text, fontFamily: C.sans, fontSize: 13, outline: "none", cursor: "pointer" };
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Modal, { title: "Contador de Impress\xE3o", subtitle: impressora.nome, onClose, maxWidth: 560, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 14 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: C.accentGlow, border: `1px solid ${C.accent}22`, borderRadius: 8, padding: "9px 13px", fontSize: 11, color: C.muted, lineHeight: 1.6 }, children: [
+        "Informe a ",
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { style: { color: C.text }, children: "leitura do contador" }),
+        " (n\xFAmero total acumulado na impressora) dos dois meses. O sistema calcula automaticamente a quantidade impressa no per\xEDodo."
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: C.card2, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: 8, height: 8, borderRadius: 2, background: C.muted } }),
+          " M\xEAs de Refer\xEAncia (leitura anterior)"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 8, marginBottom: 10 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value: mesAnt, onChange: (e) => trocarMesAnt(anoAnt, parseInt(e.target.value)), style: { ...selStyle, flex: 1 }, children: nomes.map((n, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: i, children: n }, i)) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value: anoAnt, onChange: (e) => trocarMesAnt(parseInt(e.target.value), mesAnt), style: selStyle, children: anos.map((a2) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: a2, children: a2 }, a2)) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "input",
+          {
+            type: "number",
+            min: "0",
+            value: valAnt,
+            onChange: (e) => setValAnt(e.target.value),
+            placeholder: "Leitura do contador (ex: 12345)",
+            style: { background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "12px 14px", color: C.text, fontFamily: C.sans, fontSize: 24, fontWeight: 800, outline: "none", width: "100%", boxSizing: "border-box", textAlign: "center" },
+            onFocus: (e) => e.target.style.borderColor = C.muted,
+            onBlur: (e) => e.target.style.borderColor = C.border
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: "#f9731610", border: `1px solid #f9731633`, borderRadius: 10, padding: 16 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 12, fontWeight: 700, color: "#f97316", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: 8, height: 8, borderRadius: 2, background: "#f97316" } }),
+          " M\xEAs de Contagem (leitura atual)"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 8, marginBottom: 10 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value: mesSel, onChange: (e) => trocarMesSel(anoSel, parseInt(e.target.value)), style: { ...selStyle, flex: 1, borderColor: "#f9731644" }, children: nomes.map((n, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: i, children: n }, i)) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value: anoSel, onChange: (e) => trocarMesSel(parseInt(e.target.value), mesSel), style: { ...selStyle, borderColor: "#f9731644" }, children: anos.map((a2) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: a2, children: a2 }, a2)) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "input",
+          {
+            type: "number",
+            min: "0",
+            value: valAtual,
+            onChange: (e) => setValAtual(e.target.value),
+            placeholder: "Leitura do contador (ex: 14870)",
+            style: { background: C.bg, border: `1px solid #f9731644`, borderRadius: 8, padding: "12px 14px", color: "#f97316", fontFamily: C.sans, fontSize: 24, fontWeight: 800, outline: "none", width: "100%", boxSizing: "border-box", textAlign: "center" },
+            onFocus: (e) => e.target.style.borderColor = "#f97316",
+            onBlur: (e) => e.target.style.borderColor = "#f9731644"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+        borderRadius: 12,
+        padding: 20,
+        textAlign: "center",
+        background: impresso !== null ? "#f9731622" : C.card2,
+        border: `2px solid ${impresso !== null ? "#f97316" : C.border}`,
+        transition: "all 0.3s"
+      }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }, children: [
+          "Impress\xF5es em ",
+          nomesC[mesSel],
+          "/",
+          anoSel
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
+          fontSize: 56,
+          fontWeight: 900,
+          lineHeight: 1,
+          fontVariantNumeric: "tabular-nums",
+          color: impresso !== null ? "#f97316" : C.muted
+        }, children: impresso !== null ? impresso.toLocaleString("pt-BR") : "\u2014" }),
+        impresso !== null && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 12, color: C.muted, marginTop: 8 }, children: [
+          numAnt.toLocaleString("pt-BR"),
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { color: C.muted }, children: [
+            "(",
+            nomesC[mesAnt],
+            "/",
+            anoAnt,
+            ")"
+          ] }),
+          " \u2192 ",
+          numAtual.toLocaleString("pt-BR"),
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { color: "#f97316" }, children: [
+            "(",
+            nomesC[mesSel],
+            "/",
+            anoSel,
+            ")"
+          ] })
+        ] }),
+        impresso === null && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 12, color: C.muted, marginTop: 6 }, children: "Preencha os dois campos acima para calcular" })
+      ] }),
+      Object.keys(leituras).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: C.card2, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { padding: "10px 16px", borderBottom: `1px solid ${C.border}`, fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em" }, children: "Hist\xF3rico de Leituras" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { maxHeight: 140, overflowY: "auto" }, children: Object.entries(leituras).sort((a2, b) => b[0].localeCompare(a2[0])).map(([key, val]) => {
+          const [ano, mes] = key.split("-").map(Number);
+          return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px", borderBottom: `1px solid ${C.border}18` }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { fontSize: 12, color: C.muted, width: 80 }, children: [
+              nomesC[mes - 1],
+              "/",
+              ano
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: 14, fontWeight: 800, color: C.text }, children: (val.contador || 0).toLocaleString("pt-BR") }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: 10, color: C.muted }, children: val.registradoEm || "" })
+          ] }, key);
+        }) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 4, borderTop: `1px solid ${C.border}` }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Btn, { variant: "outline", onClick: onClose, children: "Cancelar" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Btn, { onClick: salvar, icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, { size: 13 }), children: "Salvar Leituras" })
+      ] })
+    ] }) });
+  }
+  function ImpressorasTab({ impressoras, setImpressoras }) {
+    const [search, setSearch] = (0, import_react42.useState)("");
+    const [form, setForm] = (0, import_react42.useState)(null);
+    const [contador, setContador] = (0, import_react42.useState)(null);
+    const save2 = async (lista) => {
+      setImpressoras(lista);
+      await window.storage.set(KEYS.impressoras, JSON.stringify(lista));
+    };
+    const addOrEdit = async (data) => {
+      let lista;
+      if (form === "new") {
+        lista = [...impressoras, { ...data, id: Date.now(), leituras: {}, criadoEm: (/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR") }];
+      } else {
+        lista = impressoras.map((i) => i.id === form.id ? { ...form, ...data } : i);
+      }
+      await save2(lista);
+      setForm(null);
+    };
+    const del = async (id) => {
+      if (!confirm("Excluir esta impressora?"))
+        return;
+      await save2(impressoras.filter((i) => i.id !== id));
+    };
+    const salvarContador = async (leituras) => {
+      const lista = impressoras.map((i) => i.id === contador.id ? { ...i, leituras } : i);
+      await save2(lista);
+      setContador(null);
+    };
+    const ma = mesAtual();
+    const mant = mesAnterior();
+    const keyAtual = `${ma.ano}-${String(ma.mes + 1).padStart(2, "0")}`;
+    const keyAnt = `${mant.ano}-${String(mant.mes + 1).padStart(2, "0")}`;
+    const getImpresso = (imp) => {
+      const leit = imp.leituras || {};
+      const a2 = leit[keyAtual]?.contador;
+      const ant = leit[keyAnt]?.contador;
+      if (a2 != null && ant != null)
+        return Math.max(0, a2 - ant);
+      return null;
+    };
+    const filtered = impressoras.filter(
+      (i) => i.nome?.toLowerCase().includes(search.toLowerCase()) || i.modelo?.toLowerCase().includes(search.toLowerCase()) || i.setor?.toLowerCase().includes(search.toLowerCase())
+    );
+    const totalMes = impressoras.reduce((s2, i) => {
+      const v = getImpresso(i);
+      return v != null ? s2 + v : s2;
+    }, 0);
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 0, height: "100%" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { padding: "16px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 10 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: 36, height: 36, background: "#f9731622", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, { size: 16, color: "#f97316" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 14, fontWeight: 700, color: C.text }, children: "Gest\xE3o de Impressoras" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 11, color: C.muted }, children: [
+              impressoras.length,
+              " impressora",
+              impressoras.length !== 1 ? "s" : "",
+              " cadastrada",
+              impressoras.length !== 1 ? "s" : ""
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: "#f9731615", border: "1px solid #f9731633", borderRadius: 9, padding: "6px 14px", display: "flex", alignItems: "center", gap: 8 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TrendingUp, { size: 13, color: "#f97316" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { fontSize: 12, fontWeight: 700, color: "#f97316" }, children: [
+              totalMes.toLocaleString("pt-BR"),
+              " impress\xF5es em ",
+              mesLabel(ma.ano, ma.mes)
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { position: "relative" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, { size: 13, style: { position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: C.muted } }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              "input",
+              {
+                value: search,
+                onChange: (e) => setSearch(e.target.value),
+                placeholder: "Buscar...",
+                style: { background: C.card2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 12px 8px 30px", color: C.text, fontFamily: C.sans, fontSize: 12, outline: "none", width: 180 }
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Btn, { onClick: () => setForm("new"), icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, { size: 13 }), children: "Nova Impressora" })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { flex: 1, overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 12 }, children: [
+        filtered.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, height: 200, color: C.muted }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, { size: 40, style: { opacity: 0.2 } }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: 13 }, children: search ? "Nenhuma impressora encontrada" : "Nenhuma impressora cadastrada" }),
+          !search && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Btn, { onClick: () => setForm("new"), icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, { size: 13 }), children: "Cadastrar primeira impressora" })
+        ] }),
+        filtered.map((imp) => {
+          const impresso = getImpresso(imp);
+          const leit = imp.leituras || {};
+          const temAtual = leit[keyAtual]?.contador != null;
+          const temAnt = leit[keyAnt]?.contador != null;
+          return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+            "div",
+            {
+              style: { background: C.card2, border: `1px solid ${C.border}`, borderRadius: 12, padding: 16, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", transition: "border-color 0.2s" },
+              onMouseEnter: (e) => e.currentTarget.style.borderColor = "#f97316",
+              onMouseLeave: (e) => e.currentTarget.style.borderColor = C.border,
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: 44, height: 44, background: "#f9731618", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, { size: 20, color: "#f97316" }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { flex: 1, minWidth: 200 }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 14, fontWeight: 700, color: C.text }, children: imp.nome }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 12, color: C.muted, marginTop: 2 }, children: [
+                    imp.modelo || "\u2014",
+                    " ",
+                    imp.setor ? `\xB7 ${imp.setor}` : "",
+                    " ",
+                    imp.ip ? `\xB7 ${imp.ip}` : ""
+                  ] }),
+                  imp.serial && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 11, color: C.muted, marginTop: 1 }, children: [
+                    "S/N: ",
+                    imp.serial
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 14px", textAlign: "center", minWidth: 90 }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 9, fontWeight: 700, color: C.muted, textTransform: "uppercase", marginBottom: 3 }, children: mesLabel(mant.ano, mant.mes) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 16, fontWeight: 800, color: temAnt ? C.text : C.muted }, children: temAnt ? (leit[keyAnt].contador || 0).toLocaleString("pt-BR") : "\u2014" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { color: C.muted, fontSize: 16 }, children: "\u2192" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: C.bg, border: `1px solid ${temAtual ? "#f9731644" : C.border}`, borderRadius: 8, padding: "8px 14px", textAlign: "center", minWidth: 90 }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 9, fontWeight: 700, color: "#f97316", textTransform: "uppercase", marginBottom: 3 }, children: mesLabel(ma.ano, ma.mes) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 16, fontWeight: 800, color: temAtual ? "#f97316" : C.muted }, children: temAtual ? (leit[keyAtual].contador || 0).toLocaleString("pt-BR") : "\u2014" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: impresso != null ? "#f9731622" : C.bg, border: `2px solid ${impresso != null ? "#f97316" : C.border}`, borderRadius: 8, padding: "8px 16px", textAlign: "center", minWidth: 90 }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 9, fontWeight: 700, color: impresso != null ? "#f97316" : C.muted, textTransform: "uppercase", marginBottom: 3 }, children: "Impresso" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 18, fontWeight: 900, color: impresso != null ? "#f97316" : C.muted }, children: impresso != null ? impresso.toLocaleString("pt-BR") : "\u2014" })
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 6, flexShrink: 0 }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => setContador(imp), style: { display: "flex", alignItems: "center", gap: 5, background: "#f9731620", border: "1px solid #f9731644", borderRadius: 7, padding: "6px 12px", color: "#f97316", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: C.sans }, title: "Registrar contador", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Hash, { size: 12 }),
+                    "Contador"
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => setForm(imp), style: { background: "none", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 8px", color: C.muted, cursor: "pointer", display: "flex" }, title: "Editar", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pen, { size: 13 }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "button",
+                    {
+                      onClick: () => del(imp.id),
+                      style: { background: "none", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 8px", color: C.muted, cursor: "pointer", display: "flex" },
+                      title: "Excluir",
+                      onMouseEnter: (e) => {
+                        e.currentTarget.style.borderColor = C.danger;
+                        e.currentTarget.style.color = C.danger;
+                      },
+                      onMouseLeave: (e) => {
+                        e.currentTarget.style.borderColor = C.border;
+                        e.currentTarget.style.color = C.muted;
+                      },
+                      children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, { size: 13 })
+                    }
+                  )
+                ] })
+              ]
+            },
+            imp.id
+          );
+        })
+      ] }),
+      form && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ImpressoraForm, { item: form === "new" ? null : form, onSave: addOrEdit, onClose: () => setForm(null) }),
+      contador && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ContadorModal, { impressora: contador, onSave: salvarContador, onClose: () => setContador(null) })
+    ] });
+  }
   function BackupModal({ onClose }) {
     const [restoring, setRestoring] = (0, import_react42.useState)(false);
     const [msg, setMsg] = (0, import_react42.useState)(null);
@@ -54317,6 +54738,7 @@
     { id: "equipamentos", label: "Equipamentos", icon: Monitor, color: C.accent },
     { id: "emprestimos", label: "Empr\xE9stimos", icon: ArrowLeftRight, color: C.orange },
     { id: "cadastros", label: "Cadastros", icon: BookOpen, color: "#fb923c" },
+    { id: "impressoras", label: "Impressoras", icon: Printer, color: "#f97316" },
     { id: "senhas", label: "Cofre de Senhas", icon: Shield, color: "#f472b6" }
   ];
   function App() {
@@ -54333,15 +54755,18 @@
     const [colaboradores, setColaboradores] = (0, import_react42.useState)([]);
     const [senhas, setSenhas] = (0, import_react42.useState)([]);
     const [emprestimos, setEmprestimos] = (0, import_react42.useState)([]);
+    const [impressoras, setImpressoras] = (0, import_react42.useState)([]);
     const [loaded, setLoaded] = (0, import_react42.useState)(false);
     const [showReports, setShowReports] = (0, import_react42.useState)(false);
     const [showBackup, setShowBackup] = (0, import_react42.useState)(false);
-    const [loggedIn, setLoggedIn] = (0, import_react42.useState)(false);
-    const [currentUser, setCurrentUser] = (0, import_react42.useState)("");
+    const [loggedIn, setLoggedIn] = (0, import_react42.useState)(() => {
+      return sessionStorage.getItem("inv_logged") === "1";
+    });
+    const [currentUser, setCurrentUser] = (0, import_react42.useState)(() => sessionStorage.getItem("inv_user") || "");
     const [showConfig, setShowConfig] = (0, import_react42.useState)(false);
     (0, import_react42.useEffect)(() => {
       (async () => {
-        const [c2, t, a2, m, v, st, bl, lo, tm, co, se, em] = await Promise.all([load(KEYS.computers, SC), load(KEYS.tablets, []), load(KEYS.aps, []), load(KEYS.misc, []), load(KEYS.vlans, ["Administrativa", "Laborat\xF3rio"]), load(KEYS.setores, SS), load(KEYS.blocos, SB), load(KEYS.locais, SL), load(KEYS.tiposMaq, STM), load(KEYS.colaboradores, []), load(KEYS.senhas, []), load(KEYS.emprestimos, [])]);
+        const [c2, t, a2, m, v, st, bl, lo, tm, co, se, em, imp] = await Promise.all([load(KEYS.computers, SC), load(KEYS.tablets, []), load(KEYS.aps, []), load(KEYS.misc, []), load(KEYS.vlans, ["Administrativa", "Laborat\xF3rio"]), load(KEYS.setores, SS), load(KEYS.blocos, SB), load(KEYS.locais, SL), load(KEYS.tiposMaq, STM), load(KEYS.colaboradores, []), load(KEYS.senhas, []), load(KEYS.emprestimos, []), load(KEYS.impressoras, [])]);
         setComputers(c2);
         setTablets(t);
         setAps(a2);
@@ -54354,6 +54779,7 @@
         setColaboradores(co);
         setSenhas(se);
         setEmprestimos(em);
+        setImpressoras(imp);
         setLoaded(true);
       })();
     }, []);
@@ -54380,6 +54806,8 @@
       return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoginScreen, { onLogin: (u) => {
         setLoggedIn(true);
         setCurrentUser(u);
+        sessionStorage.setItem("inv_logged", "1");
+        sessionStorage.setItem("inv_user", u);
       } });
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: C.bg, minHeight: "100vh", fontFamily: C.sans, color: C.text }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: `*{box-sizing:border-box;margin:0;}@keyframes spin{to{transform:rotate(360deg);}}::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:${C.bg};}::-webkit-scrollbar-thumb{background:${C.border};border-radius:3px;}select option{background:${C.card};color:${C.text};}` }),
@@ -54423,6 +54851,8 @@
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => {
             setLoggedIn(false);
             setCurrentUser("");
+            sessionStorage.removeItem("inv_logged");
+            sessionStorage.removeItem("inv_user");
           }, style: { display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 12px", color: C.muted, fontSize: 12, cursor: "pointer", fontFamily: C.sans, transition: "all 0.2s" }, title: "Sair", onMouseEnter: (e) => {
             e.currentTarget.style.borderColor = C.danger;
             e.currentTarget.style.color = C.danger;
@@ -54459,6 +54889,7 @@
           save(KEYS.emprestimos, v);
         }, colaboradores, tiposMaq }),
         active === "cadastros" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CadastrosTab, { setores, setSetores, blocos, setBlocos, locais, setLocais, tiposMaq, setTiposMaq, colaboradores, setColaboradores }),
+        active === "impressoras" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ImpressorasTab, { impressoras, setImpressoras }),
         active === "senhas" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SenhasTab, { senhas, setSenhas })
       ] }) }),
       showBackup && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BackupModal, { onClose: () => setShowBackup(false) }),
